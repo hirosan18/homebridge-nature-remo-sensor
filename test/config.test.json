@@ -1,0 +1,21 @@
+{
+  "bridge": {
+    "name": "Homebridge",
+    "username": "CC:22:3D:E3:CE:30",
+    "port": 51826,
+    "pin": "031-45-154"
+  },
+  "description": "Nature Remo Control",
+  "accessories": [{
+    "accessory": "remo-sensor",
+    "name": "センサー",
+    "deviceName": "リビングのRemo",
+    "schedule": "*/10 * * * *",
+    "accessToken": "xxxxxxxxxxxxxxx"
+  }, {
+    "accessory": "remo-sensor",
+    "name": "センサー2",
+    "schedule": "*/10 * * * *",
+    "accessToken": "xxxxxxxxxxxxxxx"
+  }]
+}

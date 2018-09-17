@@ -155,7 +155,7 @@ class NatureRemoSensor {
       callback(error)
     })
   }
-  
+
   getServices () {
     this.log(`start homebridge Server ${this.name}`)
 
@@ -175,7 +175,7 @@ class NatureRemoSensor {
     this.lightSensorService
       .getCharacteristic(Characteristic.CurrentAmbientLightLevel)
       .on('get', this.getLight.bind(this))
-    
+
     return [this.informationService, this.humiditySensorService, this.temperatureSensorService, this.lightSensorService]
   }
 }

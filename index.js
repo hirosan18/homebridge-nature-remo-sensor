@@ -34,21 +34,25 @@ class NatureRemoSensor {
     this.informationService = new Service.AccessoryInformation()
     this.humiditySensorService = new Service.HumiditySensor(config.name)
     this.temperatureSensorService = new Service.TemperatureSensor(config.name)
+    this.lightSensorService = new Service.LightSensor(config.name)
 
     this.job = new CronJob({
       cronTime: this.schedule,
       onTick: () => {
         this.log(`> [Schedule]`)
         this.request().then((data) => {
-          let {humidity, temperature} = this.parseResponseData(data)
+          let {humidity, temperature, light} = this.parseResponseData(data)
           this.log(`>>> [Update] humidity => ${humidity}`)
           this.log(`>>> [Update] temperature => ${temperature}`)
+          this.log(`>>> [Update] light => ${light}`)
           this.humiditySensorService.getCharacteristic(Characteristic.CurrentRelativeHumidity).updateValue(humidity)
           this.temperatureSensorService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(temperature)
+          this.lightSensorService.getCharacteristic(Characteristic.CurrentAmbientLightLevel).updateValue(light)
         }).catch((error) => {
           this.log(`>>> [Error] "${error}"`)
           this.humiditySensorService.getCharacteristic(Characteristic.CurrentRelativeHumidity).updateValue(error)
           this.temperatureSensorService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(error)
+          this.lightSensorService.getCharacteristic(Characteristic.CurrentAmbientLightLevel).updateValue(error)
         })
       },
       runOnInit: true
@@ -89,6 +93,7 @@ class NatureRemoSensor {
   parseResponseData (response) {
     let humidity = null
     let temperature = null
+    let light = null
 
     let data
     let json
@@ -113,8 +118,11 @@ class NatureRemoSensor {
       if (data.newest_events.te) {
         temperature = data.newest_events.te.val
       }
+      if (data.newest_events.il) {
+        light = data.newest_events.il.val
+      }
     }
-    return {humidity, temperature}
+    return {humidity, temperature, light}
   }
 
   getHumidity (callback) {
@@ -137,7 +145,17 @@ class NatureRemoSensor {
       callback(error)
     })
   }
-
+  getLight (callback) {
+    this.log(`> [Getting] light`)
+    this.request().then((data) => {
+      let {light} = this.parseResponseData(data)
+      this.log(`>>> [Getting] light => ${light}`)
+      callback(null, light)
+    }).catch((error) => {
+      callback(error)
+    })
+  }
+  
   getServices () {
     this.log(`start homebridge Server ${this.name}`)
 
@@ -154,6 +172,10 @@ class NatureRemoSensor {
       .getCharacteristic(Characteristic.CurrentTemperature)
       .on('get', this.getTemperature.bind(this))
 
-    return [this.informationService, this.humiditySensorService, this.temperatureSensorService]
+    this.lightSensorService
+      .getCharacteristic(Characteristic.CurrentAmbientLightLevel)
+      .on('get', this.getLight.bind(this))
+    
+    return [this.informationService, this.humiditySensorService, this.temperatureSensorService, this.lightSensorService]
   }
 }

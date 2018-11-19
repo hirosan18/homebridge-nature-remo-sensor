@@ -58,9 +58,13 @@ $ vim ~/.homebridge/config.json
     "accessory": "remo-sensor",
     "name": "センサー",
     "deviceName": "<DeivceNickName>",
+    "mini": false,
     "schedule": "*/5 * * * *",
     "accessToken": "<https://home.nature.global/で取得したAccess token>"
   }]
 }
 ```
-Note: schedule is cron syntax
+
+Note:
+* `schedule` is cron syntax
+* `mini` must be `true` for Nature Remo mini

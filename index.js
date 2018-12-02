@@ -48,7 +48,7 @@ class NatureRemoSensor {
       onTick: () => {
         this.log(`> [Schedule]`)
         this.request().then((data) => {
-          let {humidity, temperature, light} = this.parseResponseData(data)
+          let { humidity, temperature, light } = this.parseResponseData(data)
           this.log(`>>> [Update] humidity => ${humidity}`)
           this.log(`>>> [Update] temperature => ${temperature}`)
           this.log(`>>> [Update] light => ${light}`)
@@ -133,13 +133,13 @@ class NatureRemoSensor {
         light = data.newest_events.il.val
       }
     }
-    return {humidity, temperature, light}
+    return { humidity, temperature, light }
   }
 
   getHumidity (callback) {
     this.log(`> [Getting] humidity`)
     this.request().then((data) => {
-      let {humidity} = this.parseResponseData(data)
+      let { humidity } = this.parseResponseData(data)
       this.log(`>>> [Getting] humidity => ${humidity}`)
       callback(null, humidity)
     }).catch((error) => {
@@ -149,7 +149,7 @@ class NatureRemoSensor {
   getTemperature (callback) {
     this.log(`> [Getting] temperature`)
     this.request().then((data) => {
-      let {temperature} = this.parseResponseData(data)
+      let { temperature } = this.parseResponseData(data)
       this.log(`>>> [Getting] temperature => ${temperature}`)
       callback(null, temperature)
     }).catch((error) => {
@@ -159,7 +159,7 @@ class NatureRemoSensor {
   getLight (callback) {
     this.log(`> [Getting] light`)
     this.request().then((data) => {
-      let {light} = this.parseResponseData(data)
+      let { light } = this.parseResponseData(data)
       this.log(`>>> [Getting] light => ${light}`)
       callback(null, light)
     }).catch((error) => {
@@ -192,6 +192,6 @@ class NatureRemoSensor {
       services = services.concat([this.humiditySensorService, this.lightSensorService])
     }
 
-    return services;
+    return services
   }
 }

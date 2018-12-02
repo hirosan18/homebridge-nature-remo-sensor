@@ -23,6 +23,15 @@ const homebridgeMock = {
           return ret
         })
       },
+      LightSensor: function (name) {
+        this.getCharacteristic = jest.fn().mockImplementation(function () {
+          const ret = {
+            on: jest.fn().mockImplementation(() => ret),
+            updateValue: jest.fn()
+          }
+          return ret
+        })
+      },
       AccessoryInformation: function () {
         this.setCharacteristic = jest.fn().mockReturnValue(this)
       }
@@ -70,10 +79,28 @@ describe('NatureRemoSensor', function () {
       expect(natureRemoSensor.name).toBe('センサー')
       expect(natureRemoSensor.deviceName).toBe('リビングのRemo')
       expect(natureRemoSensor.schedule).toBe('*/10 * * * *')
+      expect(natureRemoSensor.mini).toBe(false)
       expect(natureRemoSensor.accessToken).toBe('xxxxxxxxxxxxxxx')
       expect(natureRemoSensor.informationService).toBeDefined()
       expect(natureRemoSensor.humiditySensorService).toBeDefined()
       expect(natureRemoSensor.temperatureSensorService).toBeDefined()
+      expect(natureRemoSensor.lightSensorService).toBeDefined()
+      expect(natureRemoSensor.job).toBeDefined()
+    })
+    it('コンストラクタ 設定あり（miniの場合）', function () {
+      jest.doMock('cron', () => { return { CronJob: function () { this.start = jest.fn() } } })
+      const natureRemoSensor = _create(config.accessories[2])
+
+      expect(natureRemoSensor.config).toBe(config.accessories[2])
+      expect(natureRemoSensor.name).toBe('センサー3(mini)')
+      expect(natureRemoSensor.deviceName).toBe('リビングのRemo(mini)')
+      expect(natureRemoSensor.schedule).toBe('*/10 * * * *')
+      expect(natureRemoSensor.mini).toBe(true)
+      expect(natureRemoSensor.accessToken).toBe('xxxxxxxxxxxxxxx')
+      expect(natureRemoSensor.informationService).toBeDefined()
+      expect(natureRemoSensor.humiditySensorService).toBeNull()
+      expect(natureRemoSensor.temperatureSensorService).toBeDefined()
+      expect(natureRemoSensor.lightSensorService).toBeNull()
       expect(natureRemoSensor.job).toBeDefined()
     })
     it('コンストラクタ 設定なし', function () {
@@ -84,24 +111,11 @@ describe('NatureRemoSensor', function () {
       expect(natureRemoSensor.name).not.toBeDefined()
       expect(natureRemoSensor.deviceName).not.toBeDefined()
       expect(natureRemoSensor.schedule).toBe('*/5 * * * *')
+      expect(natureRemoSensor.mini).toBe(false)
       expect(natureRemoSensor.accessToken).not.toBeDefined()
       expect(natureRemoSensor.informationService).toBeDefined()
       expect(natureRemoSensor.humiditySensorService).toBeDefined()
-      expect(natureRemoSensor.temperatureSensorService).toBeDefined()
-      expect(natureRemoSensor.job).toBeDefined()
-    })
-    it('コンストラクタ 設定なし', function () {
-      jest.doMock('cron', () => { return { CronJob: function () { this.start = jest.fn() } } })
-      const natureRemoSensor = _create()
-
-      expect(natureRemoSensor.config).toEqual({})
-      expect(natureRemoSensor.name).not.toBeDefined()
-      expect(natureRemoSensor.deviceName).not.toBeDefined()
-      expect(natureRemoSensor.schedule).toBe('*/5 * * * *')
-      expect(natureRemoSensor.accessToken).not.toBeDefined()
-      expect(natureRemoSensor.informationService).toBeDefined()
-      expect(natureRemoSensor.humiditySensorService).toBeDefined()
-      expect(natureRemoSensor.temperatureSensorService).toBeDefined()
+      expect(natureRemoSensor.lightSensorService).toBeDefined()
       expect(natureRemoSensor.job).toBeDefined()
     })
     it('getServices', function () {
@@ -112,9 +126,20 @@ describe('NatureRemoSensor', function () {
       expect(services).toContain(natureRemoSensor.informationService)
       expect(services).toContain(natureRemoSensor.humiditySensorService)
       expect(services).toContain(natureRemoSensor.temperatureSensorService)
+      expect(services).toContain(natureRemoSensor.lightSensorService)
+      expect(services.length).toBe(4)
+    })
+    it('getServices（miniの場合）', function () {
+      jest.doMock('cron', () => { return { CronJob: function () { this.start = jest.fn() } } })
+      const natureRemoSensor = _create(config.accessories[2])
+
+      const services = natureRemoSensor.getServices()
+      expect(services).toContain(natureRemoSensor.informationService)
+      expect(services).toContain(natureRemoSensor.temperatureSensorService)
+      expect(services.length).toBe(2)
     })
     it('getHumidity', function (done) {
-      nock(/.*/).get(/.*/).reply(200, [{newest_events: {hu: {val: 100}, te: {val: 35}}}])
+      nock(/.*/).get(/.*/).reply(200, [{newest_events: {hu: {val: 100}, te: {val: 35}, il: {val: 29.2}}}])
       jest.doMock('cron', () => { return { CronJob: function () { this.start = jest.fn() } } })
       const natureRemoSensor = _create()
 
@@ -134,7 +159,7 @@ describe('NatureRemoSensor', function () {
       })
     })
     it('getTemperature', function (done) {
-      nock(/.*/).get(/.*/).reply(200, [{newest_events: {hu: {val: 100}, te: {val: 35}}}])
+      nock(/.*/).get(/.*/).reply(200, [{newest_events: {hu: {val: 100}, te: {val: 35}, il: {val: 29.2}}}])
       jest.doMock('cron', () => { return { CronJob: function () { this.start = jest.fn() } } })
       const natureRemoSensor = _create()
 
@@ -153,8 +178,28 @@ describe('NatureRemoSensor', function () {
         done()
       })
     })
-    it('getTemperatureとgetHumidityを同時実行', function (done) {
-      nock(/.*/).get(/.*/).reply(200, [{newest_events: {hu: {val: 100}, te: {val: 35}}}])
+    it('getLight', function (done) {
+      nock(/.*/).get(/.*/).reply(200, [{newest_events: {hu: {val: 100}, te: {val: 35}, il: {val: 29.2}}}])
+      jest.doMock('cron', () => { return { CronJob: function () { this.start = jest.fn() } } })
+      const natureRemoSensor = _create()
+
+      natureRemoSensor.getLight((e, value) => {
+        expect(value).toBe(29.2)
+        done()
+      })
+    })
+    it('getLight エラー', function (done) {
+      nock(/.*/).get(/.*/).reply(500, {})
+      jest.doMock('cron', () => { return { CronJob: function () { this.start = jest.fn() } } })
+      const natureRemoSensor = _create()
+
+      natureRemoSensor.getLight((e, value) => {
+        expect(e).toBeDefined()
+        done()
+      })
+    })
+    it('getTemperatureとgetHumidityとgetLightを同時実行', function (done) {
+      nock(/.*/).get(/.*/).reply(200, [{newest_events: {hu: {val: 100}, te: {val: 35}, il: {val: 29.2}}}])
       jest.doMock('cron', () => { return { CronJob: function () { this.start = jest.fn() } } })
 
       const natureRemoSensor = _create()
@@ -171,13 +216,19 @@ describe('NatureRemoSensor', function () {
           resolve()
         })
       })
+      const promise3 = new Promise(function (resolve) {
+        natureRemoSensor.getLight((e, value) => {
+          expect(value).toBe(29.2)
+          resolve()
+        })
+      })
 
-      Promise.all([promise1, promise2]).then(() => {
+      Promise.all([promise1, promise2, promise3]).then(() => {
         done()
       })
     })
     it('request deviceName 指定なし', function (done) {
-      nock(/.*/).get(/.*/).reply(200, [{name: '寝室のRemo', newest_events: {hu: {val: 100}, te: {val: 35}}}, {name: 'リビングのRemo', newest_events: {hu: {val: 10}, te: {val: 1}}}])
+      nock(/.*/).get(/.*/).reply(200, [{name: '寝室のRemo', newest_events: {hu: {val: 100}, te: {val: 35}, il: {val: 29.2}}}, {name: 'リビングのRemo', newest_events: {hu: {val: 10}, te: {val: 1}, il: {val: 10}}}])
       jest.doMock('cron', () => { return { CronJob: function () { this.start = jest.fn() } } })
       const natureRemoSensor = _create(config.accessories[1])
 
@@ -187,7 +238,7 @@ describe('NatureRemoSensor', function () {
       })
     })
     it('request deviceName 指定あり', function (done) {
-      nock(/.*/).get(/.*/).reply(200, [{name: '寝室のRemo', newest_events: {hu: {val: 100}, te: {val: 35}}}, {name: 'リビングのRemo', newest_events: {hu: {val: 10}, te: {val: 1}}}])
+      nock(/.*/).get(/.*/).reply(200, [{name: '寝室のRemo', newest_events: {hu: {val: 100}, te: {val: 35}, il: {val: 29.2}}}, {name: 'リビングのRemo', newest_events: {hu: {val: 10}, te: {val: 1}, il: {val: 10}}}])
       jest.doMock('cron', () => { return { CronJob: function () { this.start = jest.fn() } } })
       const natureRemoSensor = _create(config.accessories[0])
 
@@ -206,7 +257,7 @@ describe('NatureRemoSensor', function () {
         done()
       })
     })
-    it('request 温度湿度情報なし', function (done) {
+    it('request 温度湿度照度情報なし', function (done) {
       nock(/.*/).get(/.*/).reply(200, [{newest_events: {}}])
       jest.doMock('cron', () => { return { CronJob: function () { this.start = jest.fn() } } })
       const natureRemoSensor = _create(config.accessories[0])
@@ -224,6 +275,19 @@ describe('NatureRemoSensor', function () {
       setTimeout(() => {
         expect(natureRemoSensor.humiditySensorService.getCharacteristic).toHaveBeenCalledTimes(1)
         expect(natureRemoSensor.temperatureSensorService.getCharacteristic).toHaveBeenCalledTimes(1)
+        expect(natureRemoSensor.lightSensorService.getCharacteristic).toHaveBeenCalledTimes(1)
+        done()
+      }, 400)
+    })
+    it('onTick（miniの場合）', function (done) {
+      nock(/.*/).get(/.*/).reply(200, [{newest_events: {}}])
+      jest.doMock('cron', () => { return { CronJob: function (conf) { this.start = () => { conf.onTick() } } } })
+      const natureRemoSensor = _create(config.accessories[2])
+
+      setTimeout(() => {
+        expect(natureRemoSensor.humiditySensorService).toBeNull()
+        expect(natureRemoSensor.temperatureSensorService.getCharacteristic).toHaveBeenCalledTimes(1)
+        expect(natureRemoSensor.lightSensorService).toBeNull()
         done()
       }, 400)
     })
@@ -235,6 +299,19 @@ describe('NatureRemoSensor', function () {
       setTimeout(() => {
         expect(natureRemoSensor.humiditySensorService.getCharacteristic).toHaveBeenCalledTimes(1)
         expect(natureRemoSensor.temperatureSensorService.getCharacteristic).toHaveBeenCalledTimes(1)
+        expect(natureRemoSensor.lightSensorService.getCharacteristic).toHaveBeenCalledTimes(1)
+        done()
+      }, 400)
+    })
+    it('onTick request失敗（miniの場合）', function (done) {
+      nock(/.*/).get(/.*/).reply(500, {})
+      jest.doMock('cron', () => { return { CronJob: function (conf) { this.start = () => { conf.onTick() } } } })
+      const natureRemoSensor = _create(config.accessories[2])
+
+      setTimeout(() => {
+        expect(natureRemoSensor.humiditySensorService).toBeNull()
+        expect(natureRemoSensor.temperatureSensorService.getCharacteristic).toHaveBeenCalledTimes(1)
+        expect(natureRemoSensor.lightSensorService).toBeNull()
         done()
       }, 400)
     })

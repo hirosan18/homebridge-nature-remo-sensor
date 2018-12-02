@@ -17,5 +17,12 @@
     "name": "センサー2",
     "schedule": "*/10 * * * *",
     "accessToken": "xxxxxxxxxxxxxxx"
+  }, {
+    "accessory": "remo-sensor",
+    "name": "センサー3(mini)",
+    "deviceName": "リビングのRemo(mini)",
+    "schedule": "*/10 * * * *",
+    "mini": true,
+    "accessToken": "xxxxxxxxxxxxxxx"
   }]
 }

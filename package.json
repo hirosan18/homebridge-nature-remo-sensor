@@ -1,7 +1,7 @@
 {
   "name": "homebridge-nature-remo-sensor",
   "description": "Nature Remo plugin for homebridge: https://github.com/nfarina/homebridge",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "Hiroaki Sano <hirosan18>",
   "private": true,
   "bugs": {

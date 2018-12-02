@@ -27,14 +27,21 @@ class NatureRemoSensor {
     this.log = log
     this.config = config
     this.name = config.name
+    this.mini = config.mini || false
     this.deviceName = config.deviceName
     this.accessToken = config.accessToken
     this.schedule = config.schedule || '*/5 * * * *'
 
     this.informationService = new Service.AccessoryInformation()
-    this.humiditySensorService = new Service.HumiditySensor(config.name)
     this.temperatureSensorService = new Service.TemperatureSensor(config.name)
-    this.lightSensorService = new Service.LightSensor(config.name)
+    if (this.mini) {
+      log('Humidity and light sensors are disabled in NatureRemo mini')
+      this.humiditySensorService = null
+      this.lightSensorService = null
+    } else {
+      this.humiditySensorService = new Service.HumiditySensor(config.name)
+      this.lightSensorService = new Service.LightSensor(config.name)
+    }
 
     this.job = new CronJob({
       cronTime: this.schedule,
@@ -45,14 +52,18 @@ class NatureRemoSensor {
           this.log(`>>> [Update] humidity => ${humidity}`)
           this.log(`>>> [Update] temperature => ${temperature}`)
           this.log(`>>> [Update] light => ${light}`)
-          this.humiditySensorService.getCharacteristic(Characteristic.CurrentRelativeHumidity).updateValue(humidity)
           this.temperatureSensorService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(temperature)
-          this.lightSensorService.getCharacteristic(Characteristic.CurrentAmbientLightLevel).updateValue(light)
+          if (!this.mini) {
+            this.humiditySensorService.getCharacteristic(Characteristic.CurrentRelativeHumidity).updateValue(humidity)
+            this.lightSensorService.getCharacteristic(Characteristic.CurrentAmbientLightLevel).updateValue(light)
+          }
         }).catch((error) => {
           this.log(`>>> [Error] "${error}"`)
-          this.humiditySensorService.getCharacteristic(Characteristic.CurrentRelativeHumidity).updateValue(error)
           this.temperatureSensorService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(error)
-          this.lightSensorService.getCharacteristic(Characteristic.CurrentAmbientLightLevel).updateValue(error)
+          if (!this.mini) {
+            this.humiditySensorService.getCharacteristic(Characteristic.CurrentRelativeHumidity).updateValue(error)
+            this.lightSensorService.getCharacteristic(Characteristic.CurrentAmbientLightLevel).updateValue(error)
+          }
         })
       },
       runOnInit: true
@@ -164,18 +175,23 @@ class NatureRemoSensor {
       .setCharacteristic(Characteristic.Model, 'Remo')
       .setCharacteristic(Characteristic.SerialNumber, '031-45-154')
 
-    this.humiditySensorService
-      .getCharacteristic(Characteristic.CurrentRelativeHumidity)
-      .on('get', this.getHumidity.bind(this))
-
     this.temperatureSensorService
       .getCharacteristic(Characteristic.CurrentTemperature)
       .on('get', this.getTemperature.bind(this))
 
-    this.lightSensorService
-      .getCharacteristic(Characteristic.CurrentAmbientLightLevel)
-      .on('get', this.getLight.bind(this))
+    let services = [this.informationService, this.temperatureSensorService]
+    if (!this.mini) {
+      this.humiditySensorService
+        .getCharacteristic(Characteristic.CurrentRelativeHumidity)
+        .on('get', this.getHumidity.bind(this))
 
-    return [this.informationService, this.humiditySensorService, this.temperatureSensorService, this.lightSensorService]
+      this.lightSensorService
+        .getCharacteristic(Characteristic.CurrentAmbientLightLevel)
+        .on('get', this.getLight.bind(this))
+
+      services = services.concat([this.humiditySensorService, this.lightSensorService])
+    }
+
+    return services;
   }
 }

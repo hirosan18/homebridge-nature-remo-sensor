@@ -24,5 +24,32 @@
     "schedule": "*/10 * * * *",
     "mini": true,
     "accessToken": "xxxxxxxxxxxxxxx"
+  }, {
+    "accessory": "remo-sensor",
+    "name": "センサー4(温度センサー無効)",
+    "deviceName": "リビングのRemo(温度センサー無効)",
+    "schedule": "*/10 * * * *",
+    "accessToken": "xxxxxxxxxxxxxxx",
+    "sensors": {
+      "temperature": false
+    }
+  }, {
+    "accessory": "remo-sensor",
+    "name": "センサー5(湿度センサー無効)",
+    "deviceName": "リビングのRemo(湿度センサー無効)",
+    "schedule": "*/10 * * * *",
+    "accessToken": "xxxxxxxxxxxxxxx",
+    "sensors": {
+      "humidity": false
+    }
+  }, {
+    "accessory": "remo-sensor",
+    "name": "センサー6(照度センサー無効)",
+    "deviceName": "リビングのRemo(照度センサー無効)",
+    "schedule": "*/10 * * * *",
+    "accessToken": "xxxxxxxxxxxxxxx",
+    "sensors": {
+      "light": false
+    }
   }]
 }

@@ -60,7 +60,12 @@ $ vim ~/.homebridge/config.json
     "deviceName": "<DeivceNickName>",
     "mini": false,
     "schedule": "*/5 * * * *",
-    "accessToken": "<https://home.nature.global/で取得したAccess token>"
+    "accessToken": "<https://home.nature.global/で取得したAccess token>",
+    "sensors": {
+      "temperature": true,
+      "humidity": true,
+      "light": false
+    }
   }]
 }
 ```
@@ -68,3 +73,4 @@ $ vim ~/.homebridge/config.json
 Note:
 * `schedule` is cron syntax
 * `mini` must be `true` for Nature Remo mini
+* `sensors` is optional

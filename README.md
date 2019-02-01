@@ -10,12 +10,12 @@ SiriとHomekit(iOSのHomeアプリ)でNatureRemoのセンサー値を取得す�
 ![humidity](./docs/humidity.gif)
 
 
-本プラグインは『Nature Remo Cloud API』を使用してNatureRemoの温度と湿度を取得します。
+本プラグインは『Nature Remo Cloud API』を使用してNatureRemoの温度と湿度、照度を取得します。
 
 そのため、[home.nature.global](https://home.nature.global/)より取得できる、OAuth2のアクセストークンが必要です。
 
-＃ 『Nature Remo Local API』には温度と湿度を取得できるAPIがv1.0.0にはないので『Nature Remo Cloud API』を使っています。  
-＃ また、Homeアプリでは温度や湿度センサーをトリガーとしたオートメーションを作成することができないようです（iOS11で確認）  
+＃ 『Nature Remo Local API』には温度と湿度、照度を取得できるAPIがv1.0.0にはないので『Nature Remo Cloud API』を使っています。  
+＃ また、Homeアプリでは温度や湿度、照度センサーをトリガーとしたオートメーションを作成することができないようです（iOS11で確認）  
 ＃ Elgato Eveアプリなどサードパーティアプリを使えばできるみたいです（未確認）
 
 

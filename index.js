@@ -154,6 +154,7 @@ class NatureRemoSensor {
       this.log(`>>> [Getting] humidity => ${humidity}`)
       callback(null, humidity)
     }).catch((error) => {
+      this.log(`>>> [Error] "${error}"`)
       callback(error)
     })
   }
@@ -164,6 +165,7 @@ class NatureRemoSensor {
       this.log(`>>> [Getting] temperature => ${temperature}`)
       callback(null, temperature)
     }).catch((error) => {
+      this.log(`>>> [Error] "${error}"`)
       callback(error)
     })
   }
@@ -174,6 +176,7 @@ class NatureRemoSensor {
       this.log(`>>> [Getting] light => ${light}`)
       callback(null, light)
     }).catch((error) => {
+      this.log(`>>> [Error] "${error}"`)
       callback(error)
     })
   }

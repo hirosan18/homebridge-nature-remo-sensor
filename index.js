@@ -1,10 +1,8 @@
-const http = require('https')
+const request = require('request')
 const { CronJob } = require('cron')
 
 const DEFAULT_REQUEST_PARAMS = {
-  host: 'api.nature.global',
-  path: '/1/devices',
-  port: 443,
+  url: 'https://api.nature.global/1/devices',
   method: 'GET'
 }
 
@@ -89,22 +87,14 @@ class NatureRemoSensor {
             'authorization': `Bearer ${this.accessToken}`
           }
         })
-        let data = ''
         this.log(`>> [request]`)
-        const req = http.request(options, res => {
-          res.setEncoding('utf8')
-          if (res.statusCode !== 200) {
-            delete this.runningPromise
-            reject(new Error(res.statusCode))
-            return
+        const req = request(options, (error, res, body) => {
+          delete this.runningPromise
+          if (!error && res.statusCode === 200) {
+            resolve(body)
+          } else {
+            reject(error || new Error(res.statusCode))
           }
-          res.on('data', chunk => {
-            data += chunk.toString()
-          })
-          res.on('end', () => {
-            delete this.runningPromise
-            resolve(data)
-          })
         })
         req.on('error', reject)
         req.end()

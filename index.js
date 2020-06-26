@@ -34,22 +34,24 @@ class NatureRemoSensor {
     const temperature = sensors.temperature !== false
     const humidity = this.mini !== true && sensors.humidity !== false
     const light = this.mini !== true && sensors.light !== false
+    const motion = this.mini !== true && sensors.motion !== false
 
     if (this.mini) {
-      log('Humidity and light sensors are disabled in NatureRemo mini')
+      log('Humidity, light and motion sensors are disabled in NatureRemo mini')
     }
 
     this.informationService = new Service.AccessoryInformation()
     this.temperatureSensorService = temperature ? new Service.TemperatureSensor(config.name) : null
     this.humiditySensorService = humidity ? new Service.HumiditySensor(config.name) : null
     this.lightSensorService = light ? new Service.LightSensor(config.name) : null
+    this.motionSensorService = motion ? new Service.MotionSensor(config.name) : null
 
     this.job = new CronJob({
       cronTime: this.schedule,
       onTick: () => {
         this.log(`> [Schedule]`)
         this.request().then((data) => {
-          let { humidity, temperature, light } = this.parseResponseData(data)
+          let { humidity, temperature, light, motion } = this.parseResponseData(data)
           if (this.temperatureSensorService) {
             this.log(`>>> [Update] temperature => ${temperature}`)
             this.temperatureSensorService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(temperature)
@@ -62,6 +64,10 @@ class NatureRemoSensor {
             this.log(`>>> [Update] light => ${light}`)
             this.lightSensorService.getCharacteristic(Characteristic.CurrentAmbientLightLevel).updateValue(light)
           }
+          if (this.motionSensorService) {
+            this.log(`>>> [Update] motion => ${motion}`)
+            this.motionSensorService.getCharacteristic(Characteristic.MotionDetected).updateValue(motion)
+          }
         }).catch((error) => {
           this.log(`>>> [Error] "${error}"`)
           if (this.temperatureSensorService) {
@@ -72,6 +78,9 @@ class NatureRemoSensor {
           }
           if (this.lightSensorService) {
             this.lightSensorService.getCharacteristic(Characteristic.CurrentAmbientLightLevel).updateValue(error)
+          }
+          if (this.motionSensorService) {
+            this.motionSensorService.getCharacteristic(Characteristic.MotionDetected).updateValue(error)
           }
         })
       },
@@ -106,6 +115,7 @@ class NatureRemoSensor {
     let humidity = null
     let temperature = null
     let light = null
+    let motion = false
 
     let data
     let json
@@ -133,8 +143,12 @@ class NatureRemoSensor {
       if (data.newest_events.il) {
         light = data.newest_events.il.val
       }
+      if (data.newest_events.mo) {
+        if (300000 > Date.now() - new Date(data.newest_events.mo.created_at))
+        motion = true
+      }
     }
-    return { humidity, temperature, light }
+    return { humidity, temperature, light, motion }
   }
 
   getHumidity (callback) {
@@ -165,6 +179,17 @@ class NatureRemoSensor {
       let { light } = this.parseResponseData(data)
       this.log(`>>> [Getting] light => ${light}`)
       callback(null, light)
+    }).catch((error) => {
+      this.log(`>>> [Error] "${error}"`)
+      callback(error)
+    })
+  }
+  getMotion (callback) {
+    this.log(`> [Getting] motion`)
+    this.request().then((data) => {
+      let { motion } = this.parseResponseData(data)
+      this.log(`>>> [Getting] motion => ${motion}`)
+      callback(null, motion)
     }).catch((error) => {
       this.log(`>>> [Error] "${error}"`)
       callback(error)
@@ -203,6 +228,14 @@ class NatureRemoSensor {
         .on('get', this.getLight.bind(this))
 
       services.push(this.lightSensorService)
+    }
+
+    if (this.motionSensorService) {
+      this.motionSensorService
+        .getCharacteristic(Characteristic.MotionDetected)
+        .on('get', this.getMotion.bind(this))
+
+      services.push(this.motionSensorService)
     }
 
     return services

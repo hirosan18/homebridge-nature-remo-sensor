@@ -56,15 +56,16 @@ $ vim ~/.homebridge/config.json
   "description": "Nature Remo Control",
   "accessories": [{
     "accessory": "remo-sensor",
-    "name": "センサー",
+    "name": "Remo Sensor",
     "deviceName": "<DeivceNickName>",
     "mini": false,
-    "schedule": "*/5 * * * *",
-    "accessToken": "<https://home.nature.global/で取得したAccess token>",
+    "schedule": "*/5 * * * *", //will get reading every 5 mins
+    "accessToken": "<Get your access token at https://home.nature.global/>",
     "sensors": {
       "temperature": true,
       "humidity": true,
-      "light": false
+      "light": false,
+      "motion": false //motion sensor triggered if motion detected in the last 5 mins
     }
   }]
 }

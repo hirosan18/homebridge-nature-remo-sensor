@@ -29,6 +29,7 @@ class NatureRemoSensor {
     this.deviceName = config.deviceName
     this.accessToken = config.accessToken
     this.schedule = config.schedule || '*/5 * * * *'
+    this.refreshTimestamp = Date.now()
 
     const sensors = config.sensors || {}
     const temperature = sensors.temperature !== false
@@ -144,8 +145,9 @@ class NatureRemoSensor {
         light = data.newest_events.il.val
       }
       if (data.newest_events.mo) {
-        if (300000 > Date.now() - new Date(data.newest_events.mo.created_at))
+        if (this.refreshTimestamp < new Date(data.newest_events.mo.created_at))
         motion = true
+        this.refreshTimestamp = Date.now()
       }
     }
     return { humidity, temperature, light, motion }

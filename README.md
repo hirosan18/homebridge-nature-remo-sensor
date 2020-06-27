@@ -65,7 +65,7 @@ $ vim ~/.homebridge/config.json
       "temperature": true,
       "humidity": true,
       "light": false,
-      "motion": false //motion sensor triggered if motion detected in the last 5 mins
+      "motion": false //motion sensor triggered if motion detected since last refresh
     }
   }]
 }

@@ -4,19 +4,19 @@ Nature Remo plugin for homebridge: https://github.com/nfarina/homebridge
 
 ## feature
 
-SiriとHomekit(iOSのHomeアプリ)でNatureRemoのセンサー値を取得するためのhomebridgeプラグインです。
+This is homebridge plugin to get NatureRemo sensor values with Siri and Homekit (Home app on iOS).
 
 ![temperature](./docs/temperature.gif)
 ![humidity](./docs/humidity.gif)
 
 
-本プラグインは『Nature Remo Cloud API』を使用してNatureRemoの温度と湿度、照度を取得します。
+This plugin uses the "Nature Remo Cloud API" to get the temperature, humidity and illumination of NatureRemo.
 
-そのため、[home.nature.global](https://home.nature.global/)より取得できる、OAuth2のアクセストークンが必要です。
+Therefore, you need OAuth2 access token, which can be obtained from [home.nature.global](https://home.nature.global/).
 
-＃ 『Nature Remo Local API』には温度と湿度、照度を取得できるAPIがv1.0.0にはないので『Nature Remo Cloud API』を使っています。  
-＃ また、Homeアプリでは温度や湿度、照度センサーをトリガーとしたオートメーションを作成することができないようです（iOS11で確認）  
-＃ Elgato Eveアプリなどサードパーティアプリを使えばできるみたいです（未確認）
+＃ "Nature Remo Local API" doesn't have API to get temperature, humidity and illumination in v1.0.0, so this plugin uses "Nature Remo Cloud API".
+＃ Also, the Home app doesn't seem to be able to create automation triggered by temperature, humidity, or illumination sensors (confirmed in iOS11).
+＃ You can do this by using a third party app such as the Elgato Eve app (unconfirmed).
 
 
 ## Installation
@@ -56,7 +56,7 @@ $ vim ~/.homebridge/config.json
   "description": "Nature Remo Control",
   "accessories": [{
     "accessory": "remo-sensor",
-    "name": "センサー",
+    "name": "sensor",
     "deviceName": "<DeivceNickName>",
     "mini": false,
     "schedule": "*/5 * * * *",

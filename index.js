@@ -47,9 +47,9 @@ class NatureRemoSensor {
     this.job = new CronJob({
       cronTime: this.schedule,
       onTick: () => {
-        this.log(`> [Schedule]`)
+        this.log('> [Schedule]')
         this.request().then((data) => {
-          let { humidity, temperature, light } = this.parseResponseData(data)
+          const { humidity, temperature, light } = this.parseResponseData(data)
           if (this.temperatureSensorService) {
             this.log(`>>> [Update] temperature => ${temperature}`)
             this.temperatureSensorService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(temperature)
@@ -79,15 +79,16 @@ class NatureRemoSensor {
     })
     this.job.start()
   }
+
   request () {
     if (!this.runningPromise) {
       this.runningPromise = new Promise((resolve, reject) => {
         const options = Object.assign({}, DEFAULT_REQUEST_PARAMS, {
           headers: {
-            'authorization': `Bearer ${this.accessToken}`
+            authorization: `Bearer ${this.accessToken}`
           }
         })
-        this.log(`>> [request]`)
+        this.log('>> [request]')
         const req = request(options, (error, res, body) => {
           delete this.runningPromise
           if (!error && res.statusCode === 200) {
@@ -102,6 +103,7 @@ class NatureRemoSensor {
     }
     return this.runningPromise
   }
+
   parseResponseData (response) {
     let humidity = null
     let temperature = null
@@ -138,9 +140,9 @@ class NatureRemoSensor {
   }
 
   getHumidity (callback) {
-    this.log(`> [Getting] humidity`)
+    this.log('> [Getting] humidity')
     this.request().then((data) => {
-      let { humidity } = this.parseResponseData(data)
+      const { humidity } = this.parseResponseData(data)
       this.log(`>>> [Getting] humidity => ${humidity}`)
       callback(null, humidity)
     }).catch((error) => {
@@ -148,10 +150,11 @@ class NatureRemoSensor {
       callback(error)
     })
   }
+
   getTemperature (callback) {
-    this.log(`> [Getting] temperature`)
+    this.log('> [Getting] temperature')
     this.request().then((data) => {
-      let { temperature } = this.parseResponseData(data)
+      const { temperature } = this.parseResponseData(data)
       this.log(`>>> [Getting] temperature => ${temperature}`)
       callback(null, temperature)
     }).catch((error) => {
@@ -159,10 +162,11 @@ class NatureRemoSensor {
       callback(error)
     })
   }
+
   getLight (callback) {
-    this.log(`> [Getting] light`)
+    this.log('> [Getting] light')
     this.request().then((data) => {
-      let { light } = this.parseResponseData(data)
+      const { light } = this.parseResponseData(data)
       this.log(`>>> [Getting] light => ${light}`)
       callback(null, light)
     }).catch((error) => {
@@ -179,7 +183,7 @@ class NatureRemoSensor {
       .setCharacteristic(Characteristic.Model, 'Remo')
       .setCharacteristic(Characteristic.SerialNumber, '031-45-154')
 
-    let services = [this.informationService]
+    const services = [this.informationService]
 
     if (this.temperatureSensorService) {
       this.temperatureSensorService

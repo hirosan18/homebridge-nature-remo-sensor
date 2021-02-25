@@ -4,6 +4,7 @@
   "version": "1.3.0",
   "author": "Hiroaki Sano <hirosan18>",
   "private": true,
+  "homepage": "https://github.com/hirosan18/homebridge-nature-remo-sensor#readme",
   "bugs": {
     "url": "https://github.com/hirosan18/homebridge-nature-remo-sensor/issues"
   },

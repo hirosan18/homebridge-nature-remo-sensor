@@ -1,0 +1,64 @@
+{
+  "pluginAlias": "remo-sensor",
+  "pluginType": "accessory",
+  "singular": true,
+  "headerDisplay": "This is homebridge plugin to get NatureRemo sensor values with Siri and Homekit (Home app on iOS).",
+  "footerDisplay": "See https://github.com/hirosan18/homebridge-nature-remo-sensor for more details.",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "required": true,
+        "default": "sensor",
+        "description": "Plugin name as displayed in the Homebridge log"
+      },
+      "deviceName": {
+        "title": "Nature Remo Device NickName",
+        "type": "string"
+      },
+      "schedule": {
+        "title": "Refresh Schedule",
+        "type": "string",
+        "description": "Specify with Cron Syntax",
+        "placeholder": "*/15 * * * *"
+      },
+      "accessToken": {
+        "title": "Nature Remo OAuth2 Access Token",
+        "type": "string",
+        "required": true,
+        "description": "Issue at https://home.nature.global/"
+      },
+      "mini": {
+        "title": "Whether to use Nature Remo mini",
+        "type": "boolean",
+        "default": false
+      },
+      "sensors": {
+        "title": "Sensors to use",
+        "type": "object",
+        "condition": {
+            "functionBody": "return model.mini === false;"
+        },
+        "properties": {
+          "temperature": {
+            "title": "Temperature",
+            "type": "boolean",
+            "default": true
+          },
+          "humidity": {
+            "title": "Humidity",
+            "type": "boolean",
+            "default": true
+          },
+          "light": {
+            "title": "Light",
+            "type": "boolean",
+            "default": true
+          }
+        }
+      }
+    }
+  }
+}

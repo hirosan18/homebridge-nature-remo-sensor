@@ -60,7 +60,7 @@ $ vim ~/.homebridge/config.json
     "deviceName": "<DeivceNickName>",
     "mini": false,
     "schedule": "*/5 * * * *",
-    "accessToken": "<https://home.nature.global/で取得したAccess token>",
+    "accessToken": "<Get your access token at https://home.nature.global/>",
     "sensors": {
       "temperature": true,
       "humidity": true,

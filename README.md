@@ -1,3 +1,6 @@
+[![npm version](https://badge.fury.io/js/homebridge-nature-remo-sensor.svg)](https://badge.fury.io/js/homebridge-nature-remo-sensor)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 # homebridge-nature-remo-sensor
 
 Nature Remo plugin for homebridge: https://github.com/nfarina/homebridge

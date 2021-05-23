@@ -38,6 +38,10 @@ class NatureRemoSensor {
     this.humidityOffset = config.humidityOffset || 0
     const light = this.mini !== true && sensors.light !== false
     const motion = this.mini !== true && sensors.motion !== false
+    const temperatureUrl = sync.temperature || ""
+    const humidityUrl = sync.humidity || ""
+    const lightUrl = sync.light || ""
+    const motionUrl = sync.motion || ""
 
     if (this.mini) {
       log('Humidity and light sensors are disabled in NatureRemo mini')
@@ -146,20 +150,25 @@ class NatureRemoSensor {
       }
       if (data.newest_events.hu) {
         humidity = data.newest_events.hu.val - data.humidity_offset + this.humidityOffset
-        request.get('http://localhost:50828/?accessoryId=RemoHU&value=' + humidity)
+        if (humidityUrl)
+          request.get(humidityUrl + humidity)
       }
       if (data.newest_events.te) {
         temperature = data.newest_events.te.val - data.temperature_offset + this.temperatureOffset
-        request.get('http://localhost:50828/?accessoryId=RemoTE&value=' + temperature)
+        if (temperatureUrl)
+          request.get(temperatureUrl + temperature)
       }
       if (data.newest_events.il) {
         light = data.newest_events.il.val
+        if (lightUrl)
+          request.get(lightUrl + light)
       }
       if (data.newest_events.mo) {
         this.log(`> [Getting] motion last triggered at => ${data.newest_events.mo.created_at}`)
         if (this.refreshTimestamp < new Date(data.newest_events.mo.created_at))
         motion = true
-        request.get('http://localhost:50829/?sensor=RemoMO&state=' + motion)
+        if (motionUrl)
+          request.get(motionUrl + motion)
         this.refreshTimestamp = Date.now()
       }
     }

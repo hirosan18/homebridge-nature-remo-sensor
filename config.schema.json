@@ -56,6 +56,11 @@
             "title": "Light",
             "type": "boolean",
             "default": true
+          },
+          "motion": {
+            "title": "Motion",
+            "type": "boolean",
+            "default": true
           }
         }
       }

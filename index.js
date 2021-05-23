@@ -29,30 +29,27 @@ class NatureRemoSensor {
     this.deviceName = config.deviceName
     this.accessToken = config.accessToken
     this.schedule = config.schedule || '*/5 * * * *'
-    this.refreshTimestamp = Date.now()
 
     const sensors = config.sensors || {}
     const temperature = sensors.temperature !== false
     const humidity = this.mini !== true && sensors.humidity !== false
     const light = this.mini !== true && sensors.light !== false
-    const motion = this.mini !== true && sensors.motion !== false
 
     if (this.mini) {
-      log('Humidity, light and motion sensors are disabled in NatureRemo mini')
+      log('Humidity and light sensors are disabled in NatureRemo mini')
     }
 
     this.informationService = new Service.AccessoryInformation()
     this.temperatureSensorService = temperature ? new Service.TemperatureSensor(config.name) : null
     this.humiditySensorService = humidity ? new Service.HumiditySensor(config.name) : null
     this.lightSensorService = light ? new Service.LightSensor(config.name) : null
-    this.motionSensorService = motion ? new Service.MotionSensor(config.name) : null
 
     this.job = new CronJob({
       cronTime: this.schedule,
       onTick: () => {
-        this.log(`> [Schedule]`)
+        this.log('> [Schedule]')
         this.request().then((data) => {
-          let { humidity, temperature, light, motion } = this.parseResponseData(data)
+          const { humidity, temperature, light } = this.parseResponseData(data)
           if (this.temperatureSensorService) {
             this.log(`>>> [Update] temperature => ${temperature}`)
             this.temperatureSensorService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(temperature)
@@ -65,10 +62,6 @@ class NatureRemoSensor {
             this.log(`>>> [Update] light => ${light}`)
             this.lightSensorService.getCharacteristic(Characteristic.CurrentAmbientLightLevel).updateValue(light)
           }
-          if (this.motionSensorService) {
-            this.log(`>>> [Update] motion => ${motion}`)
-            this.motionSensorService.getCharacteristic(Characteristic.MotionDetected).updateValue(motion)
-          }
         }).catch((error) => {
           this.log(`>>> [Error] "${error}"`)
           if (this.temperatureSensorService) {
@@ -80,24 +73,22 @@ class NatureRemoSensor {
           if (this.lightSensorService) {
             this.lightSensorService.getCharacteristic(Characteristic.CurrentAmbientLightLevel).updateValue(error)
           }
-          if (this.motionSensorService) {
-            this.motionSensorService.getCharacteristic(Characteristic.MotionDetected).updateValue(error)
-          }
         })
       },
       runOnInit: true
     })
     this.job.start()
   }
+
   request () {
     if (!this.runningPromise) {
       this.runningPromise = new Promise((resolve, reject) => {
         const options = Object.assign({}, DEFAULT_REQUEST_PARAMS, {
           headers: {
-            'authorization': `Bearer ${this.accessToken}`
+            authorization: `Bearer ${this.accessToken}`
           }
         })
-        this.log(`>> [request]`)
+        this.log('>> [request]')
         const req = request(options, (error, res, body) => {
           delete this.runningPromise
           if (!error && res.statusCode === 200) {
@@ -112,11 +103,11 @@ class NatureRemoSensor {
     }
     return this.runningPromise
   }
+
   parseResponseData (response) {
     let humidity = null
     let temperature = null
     let light = null
-    let motion = false
 
     let data
     let json
@@ -144,19 +135,14 @@ class NatureRemoSensor {
       if (data.newest_events.il) {
         light = data.newest_events.il.val
       }
-      if (data.newest_events.mo) {
-        if (this.refreshTimestamp < new Date(data.newest_events.mo.created_at))
-        motion = true
-        this.refreshTimestamp = Date.now()
-      }
     }
-    return { humidity, temperature, light, motion }
+    return { humidity, temperature, light }
   }
 
   getHumidity (callback) {
-    this.log(`> [Getting] humidity`)
+    this.log('> [Getting] humidity')
     this.request().then((data) => {
-      let { humidity } = this.parseResponseData(data)
+      const { humidity } = this.parseResponseData(data)
       this.log(`>>> [Getting] humidity => ${humidity}`)
       callback(null, humidity)
     }).catch((error) => {
@@ -164,10 +150,11 @@ class NatureRemoSensor {
       callback(error)
     })
   }
+
   getTemperature (callback) {
-    this.log(`> [Getting] temperature`)
+    this.log('> [Getting] temperature')
     this.request().then((data) => {
-      let { temperature } = this.parseResponseData(data)
+      const { temperature } = this.parseResponseData(data)
       this.log(`>>> [Getting] temperature => ${temperature}`)
       callback(null, temperature)
     }).catch((error) => {
@@ -175,23 +162,13 @@ class NatureRemoSensor {
       callback(error)
     })
   }
+
   getLight (callback) {
-    this.log(`> [Getting] light`)
+    this.log('> [Getting] light')
     this.request().then((data) => {
-      let { light } = this.parseResponseData(data)
+      const { light } = this.parseResponseData(data)
       this.log(`>>> [Getting] light => ${light}`)
       callback(null, light)
-    }).catch((error) => {
-      this.log(`>>> [Error] "${error}"`)
-      callback(error)
-    })
-  }
-  getMotion (callback) {
-    this.log(`> [Getting] motion`)
-    this.request().then((data) => {
-      let { motion } = this.parseResponseData(data)
-      this.log(`>>> [Getting] motion => ${motion}`)
-      callback(null, motion)
     }).catch((error) => {
       this.log(`>>> [Error] "${error}"`)
       callback(error)
@@ -206,7 +183,7 @@ class NatureRemoSensor {
       .setCharacteristic(Characteristic.Model, 'Remo')
       .setCharacteristic(Characteristic.SerialNumber, '031-45-154')
 
-    let services = [this.informationService]
+    const services = [this.informationService]
 
     if (this.temperatureSensorService) {
       this.temperatureSensorService
@@ -230,14 +207,6 @@ class NatureRemoSensor {
         .on('get', this.getLight.bind(this))
 
       services.push(this.lightSensorService)
-    }
-
-    if (this.motionSensorService) {
-      this.motionSensorService
-        .getCharacteristic(Characteristic.MotionDetected)
-        .on('get', this.getMotion.bind(this))
-
-      services.push(this.motionSensorService)
     }
 
     return services

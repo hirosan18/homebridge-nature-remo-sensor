@@ -8,26 +8,26 @@
   "description": "Nature Remo Control",
   "accessories": [{
     "accessory": "remo-sensor",
-    "name": "センサー",
-    "deviceName": "リビングのRemo",
+    "name": "sensor",
+    "deviceName": "Remo in living room",
     "schedule": "*/10 * * * *",
     "accessToken": "xxxxxxxxxxxxxxx"
   }, {
     "accessory": "remo-sensor",
-    "name": "センサー2",
+    "name": "sensor2",
     "schedule": "*/10 * * * *",
     "accessToken": "xxxxxxxxxxxxxxx"
   }, {
     "accessory": "remo-sensor",
-    "name": "センサー3(mini)",
-    "deviceName": "リビングのRemo(mini)",
+    "name": "sensor3(mini)",
+    "deviceName": "Remo in living room(mini)",
     "schedule": "*/10 * * * *",
     "mini": true,
     "accessToken": "xxxxxxxxxxxxxxx"
   }, {
     "accessory": "remo-sensor",
-    "name": "センサー4(温度センサー無効)",
-    "deviceName": "リビングのRemo(温度センサー無効)",
+    "name": "sensor4(Temperature sensor disabled)",
+    "deviceName": "Remo in living room(Temperature sensor disabled)",
     "schedule": "*/10 * * * *",
     "accessToken": "xxxxxxxxxxxxxxx",
     "sensors": {
@@ -35,8 +35,8 @@
     }
   }, {
     "accessory": "remo-sensor",
-    "name": "センサー5(湿度センサー無効)",
-    "deviceName": "リビングのRemo(湿度センサー無効)",
+    "name": "sensor5(Humidity sensor disabled)",
+    "deviceName": "Remo in living room(Humidity sensor disabled)",
     "schedule": "*/10 * * * *",
     "accessToken": "xxxxxxxxxxxxxxx",
     "sensors": {
@@ -44,8 +44,8 @@
     }
   }, {
     "accessory": "remo-sensor",
-    "name": "センサー6(照度センサー無効)",
-    "deviceName": "リビングのRemo(照度センサー無効)",
+    "name": "sensor6(Illuminance sensor disabled)",
+    "deviceName": "Remo in living room(Illuminance sensor disabled)",
     "schedule": "*/10 * * * *",
     "accessToken": "xxxxxxxxxxxxxxx",
     "sensors": {

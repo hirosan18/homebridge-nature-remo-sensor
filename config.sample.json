@@ -8,8 +8,8 @@
   "description": "Nature Remo Control",
   "accessories": [{
     "accessory": "remo-sensor",
-    "name": "センサー",
-    "deviceName": "リビングのRemo",
+    "name": "sensor",
+    "deviceName": "Remo in living room",
     "schedule": "*/10 * * * *",
     "accessToken": "access token"
   }]

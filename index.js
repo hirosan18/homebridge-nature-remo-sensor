@@ -91,6 +91,9 @@ class NatureRemoSensor {
         this.log('>> [request]')
         const req = request(options, (error, res, body) => {
           delete this.runningPromise
+          const limit = res?.headers?.['x-rate-limit-limit'] ?? 0
+          const remaining = res?.headers?.['x-rate-limit-remaining'] ?? 0
+          this.log(`>>> [response] status: ${res?.statusCode ?? 'NONE'}, limit: ${remaining}/${limit}`)
           if (!error && res.statusCode === 200) {
             resolve(body)
           } else {

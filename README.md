@@ -61,9 +61,10 @@ $ vim ~/.homebridge/config.json
     "accessory": "remo-sensor",
     "name": "sensor",
     "deviceName": "<DeivceNickName>",
-    "mini": false,
     "schedule": "*/5 * * * *",
+    "cache": true,
     "accessToken": "<Get your access token at https://home.nature.global/>",
+    "mini": false,
     "sensors": {
       "temperature": true,
       "humidity": true,
@@ -75,5 +76,6 @@ $ vim ~/.homebridge/config.json
 
 Note:
 * `schedule` is cron syntax
+* `cache` If true, sensor value requests via Homebridge will return the value refreshed by the schedule (default false)
 * `mini` must be `true` for Nature Remo mini
 * `sensors` is optional

@@ -6,6 +6,10 @@ const DEFAULT_REQUEST_PARAMS = {
   method: 'GET'
 }
 
+const TIMEOUT = 2500
+
+const REGEX_TIMEOUT_ERROR_CODE = /E(?:SOCKET)?TIMEDOUT/
+
 let version
 let Service
 let Characteristic
@@ -25,31 +29,35 @@ class NatureRemoSensor {
     this.log = log
     this.config = config
     this.name = config.name
-    this.mini = config.mini || false
+    this.mini = config.mini ?? false
     this.deviceName = config.deviceName
     this.accessToken = config.accessToken
     this.schedule = config.schedule || '*/5 * * * *'
+    this.cache = config.cache ?? false
 
-    const sensors = config.sensors || {}
-    const temperature = sensors.temperature !== false
-    const humidity = this.mini !== true && sensors.humidity !== false
-    const light = this.mini !== true && sensors.light !== false
+    this.previousSensorValue = null
+
+    const sensors = config.sensors ?? {}
+    const isEnabledTemperature = sensors.temperature !== false
+    const isEnabledHumidity = this.mini !== true && sensors.humidity !== false
+    const isEnabledLight = this.mini !== true && sensors.light !== false
 
     if (this.mini) {
       log('Humidity and light sensors are disabled in NatureRemo mini')
     }
 
     this.informationService = new Service.AccessoryInformation()
-    this.temperatureSensorService = temperature ? new Service.TemperatureSensor(config.name) : null
-    this.humiditySensorService = humidity ? new Service.HumiditySensor(config.name) : null
-    this.lightSensorService = light ? new Service.LightSensor(config.name) : null
+    this.temperatureSensorService = isEnabledTemperature ? new Service.TemperatureSensor(config.name) : null
+    this.humiditySensorService = isEnabledHumidity ? new Service.HumiditySensor(config.name) : null
+    this.lightSensorService = isEnabledLight ? new Service.LightSensor(config.name) : null
 
     this.job = new CronJob({
       cronTime: this.schedule,
       onTick: () => {
         this.log('> [Schedule]')
         this.request().then((data) => {
-          const { humidity, temperature, light } = this.parseResponseData(data)
+          this.previousSensorValue = this.parseResponseData(data)
+          const { humidity, temperature, light } = this.previousSensorValue
           if (this.temperatureSensorService) {
             this.log(`>>> [Update] temperature => ${temperature}`)
             this.temperatureSensorService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(temperature)
@@ -64,6 +72,7 @@ class NatureRemoSensor {
           }
         }).catch((error) => {
           this.log(`>>> [Error] "${error}"`)
+          this.previousSensorValue = null
           if (this.temperatureSensorService) {
             this.temperatureSensorService.getCharacteristic(Characteristic.CurrentTemperature).updateValue(error)
           }
@@ -78,16 +87,21 @@ class NatureRemoSensor {
       runOnInit: true
     })
     this.job.start()
+
+    this.getTemperature = this.createGetSensorFunc('temperature')
+    this.getHumidity = this.createGetSensorFunc('humidity')
+    this.getLight = this.createGetSensorFunc('light')
   }
 
-  request () {
+  request (option) {
     if (!this.runningPromise) {
       this.runningPromise = new Promise((resolve, reject) => {
         const options = Object.assign({}, DEFAULT_REQUEST_PARAMS, {
           headers: {
             authorization: `Bearer ${this.accessToken}`
           }
-        })
+        }, typeof option === 'object' ? option : {})
+
         this.log('>> [request]')
         const req = request(options, (error, res, body) => {
           delete this.runningPromise
@@ -142,40 +156,28 @@ class NatureRemoSensor {
     return { humidity, temperature, light }
   }
 
-  getHumidity (callback) {
-    this.log('> [Getting] humidity')
-    this.request().then((data) => {
-      const { humidity } = this.parseResponseData(data)
-      this.log(`>>> [Getting] humidity => ${humidity}`)
-      callback(null, humidity)
-    }).catch((error) => {
-      this.log(`>>> [Error] "${error}"`)
-      callback(error)
-    })
-  }
-
-  getTemperature (callback) {
-    this.log('> [Getting] temperature')
-    this.request().then((data) => {
-      const { temperature } = this.parseResponseData(data)
-      this.log(`>>> [Getting] temperature => ${temperature}`)
-      callback(null, temperature)
-    }).catch((error) => {
-      this.log(`>>> [Error] "${error}"`)
-      callback(error)
-    })
-  }
-
-  getLight (callback) {
-    this.log('> [Getting] light')
-    this.request().then((data) => {
-      const { light } = this.parseResponseData(data)
-      this.log(`>>> [Getting] light => ${light}`)
-      callback(null, light)
-    }).catch((error) => {
-      this.log(`>>> [Error] "${error}"`)
-      callback(error)
-    })
+  createGetSensorFunc (type) {
+    return (callback) => {
+      this.log(`> [Getting] ${type}`)
+      const previousSensorValue = this.previousSensorValue?.[type]
+      if (this.cache && typeof previousSensorValue === 'number') {
+        this.log(`>>> [Getting] ${type} => ${previousSensorValue} (from cache)`)
+        callback(null, previousSensorValue)
+      } else {
+        this.request({ timeout: TIMEOUT }).then((data) => {
+          const value = this.parseResponseData(data)?.[type]
+          this.log(`>>> [Getting] ${type} => ${value}`)
+          callback(null, value)
+        }).catch((error) => {
+          this.log(`>>> [Error] "${error}"`)
+          if (REGEX_TIMEOUT_ERROR_CODE.test(error.code) && typeof previousSensorValue === 'number') {
+            callback(null, previousSensorValue)
+          } else {
+            callback(error)
+          }
+        })
+      }
+    }
   }
 
   getServices () {

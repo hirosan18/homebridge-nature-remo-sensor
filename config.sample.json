@@ -23,6 +23,7 @@
       "accessory": "remo-sensor",
       "name": "sensor",
       "deviceName": "Remo in living room",
+      "cache": true,
       "schedule": "*/10 * * * *",
       "accessToken": "access token"
     }

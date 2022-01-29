@@ -1,4 +1,4 @@
-const request = require('request')
+const axios = require('axios')
 const { CronJob } = require('cron')
 
 const DEFAULT_REQUEST_PARAMS = {
@@ -7,8 +7,7 @@ const DEFAULT_REQUEST_PARAMS = {
 }
 
 const TIMEOUT = 2500
-
-const REGEX_TIMEOUT_ERROR_CODE = /E(?:SOCKET)?TIMEDOUT/
+const REGEX_TIMEOUT_ERROR_CODE = /E(?:(?:SOCKET)?TIMEDOUT|CONNABORTED)/
 
 let version
 let Service
@@ -70,6 +69,7 @@ class NatureRemoSensor {
             this.log(`>>> [Update] light => ${light}`)
             this.lightSensorService.getCharacteristic(Characteristic.CurrentAmbientLightLevel).updateValue(light)
           }
+          this.log('> [Schedule] finish')
         }).catch((error) => {
           this.log(`>>> [Error] "${error}"`)
           this.previousSensorValue = null
@@ -82,6 +82,7 @@ class NatureRemoSensor {
           if (this.lightSensorService) {
             this.lightSensorService.getCharacteristic(Characteristic.CurrentAmbientLightLevel).updateValue(error)
           }
+          this.log('> [Schedule] finish')
         })
       },
       runOnInit: true
@@ -95,53 +96,47 @@ class NatureRemoSensor {
 
   request (option) {
     if (!this.runningPromise) {
-      this.runningPromise = new Promise((resolve, reject) => {
-        const options = Object.assign({}, DEFAULT_REQUEST_PARAMS, {
-          headers: {
-            authorization: `Bearer ${this.accessToken}`
-          }
-        }, typeof option === 'object' ? option : {})
+      const options = Object.assign({}, DEFAULT_REQUEST_PARAMS, {
+        headers: {
+          authorization: `Bearer ${this.accessToken}`
+        }
+      }, typeof option === 'object' ? option : {})
 
-        this.log('>> [request]')
-        const req = request(options, (error, res, body) => {
+      this.log('>> [request] start')
+      this.runningPromise = axios(options)
+        .then((response) => {
+          const limit = response.headers?.['x-rate-limit-limit'] ?? 0
+          const remaining = response.headers?.['x-rate-limit-remaining'] ?? 0
+          this.log(`>>> [response] status: ${response.status}, limit: ${remaining}/${limit}`)
           delete this.runningPromise
-          const limit = res?.headers?.['x-rate-limit-limit'] ?? 0
-          const remaining = res?.headers?.['x-rate-limit-remaining'] ?? 0
-          this.log(`>>> [response] status: ${res?.statusCode ?? 'NONE'}, limit: ${remaining}/${limit}`)
-          if (!error && res.statusCode === 200) {
-            resolve(body)
-          } else {
-            reject(error || new Error(res.statusCode))
-          }
+          return response.data
         })
-        req.on('error', reject)
-        req.end()
-      })
+        .catch((error) => {
+          const response = error?.response
+          const limit = response?.headers?.['x-rate-limit-limit'] ?? 0
+          const remaining = response?.headers?.['x-rate-limit-remaining'] ?? 0
+          this.log(`>>> [response] status: ${response?.status ?? 'NONE'}, limit: ${remaining}/${limit}`)
+          delete this.runningPromise
+          throw error
+        })
     }
     return this.runningPromise
   }
 
-  parseResponseData (response) {
+  parseResponseData (responseData) {
     let humidity = null
     let temperature = null
     let light = null
 
     let data
-    let json
-    try {
-      json = JSON.parse(response)
-    } catch (e) {
-      json = null
-    }
 
     if (this.deviceName) {
-      data = (json || []).find((device, i) => {
+      data = (responseData || []).find((device, i) => {
         return device.name === this.deviceName
       })
     }
-    if (!data) {
-      data = (json || [])[0]
-    }
+    data = data ?? (responseData || [])[0]
+
     if (data && data.newest_events) {
       if (data.newest_events.hu) {
         humidity = data.newest_events.hu.val

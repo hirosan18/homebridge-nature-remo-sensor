@@ -9,8 +9,8 @@
     "url": "https://github.com/hirosan18/homebridge-nature-remo-sensor/issues"
   },
   "dependencies": {
-    "cron": "^1.8.2",
-    "request": "^2.88.0"
+    "axios": "^0.25.0",
+    "cron": "^1.8.2"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
@@ -23,7 +23,8 @@
     "homebridge": "^1.4.0",
     "jest": "^26.6.3",
     "nock": "^13.2.2",
-    "rimraf": "^3.0.2"
+    "rimraf": "^3.0.2",
+    "wait-for-expect": "^3.0.2"
   },
   "engines": {
     "node": ">=4.3.2",
@@ -46,6 +47,7 @@
     "watch": "cross-env NODE_ENV=test jest --watch"
   },
   "jest": {
+    "testEnvironment": "node",
     "verbose": true,
     "clearMocks": true,
     "resetMocks": true,

@@ -22,7 +22,14 @@
         "title": "Refresh Schedule",
         "type": "string",
         "description": "Specify with Cron Syntax",
-        "placeholder": "*/15 * * * *"
+        "placeholder": "*/5 * * * *",
+        "default": "*/5 * * * *"
+      },
+      "cache": {
+        "title": "Use Cache",
+        "type": "boolean",
+        "description": "Whether to return the latest sensors value when requested by Homebridge. If true, only Refresh on Schedule",
+        "default": false
       },
       "accessToken": {
         "title": "Nature Remo OAuth2 Access Token",
@@ -39,7 +46,7 @@
         "title": "Sensors to use",
         "type": "object",
         "condition": {
-            "functionBody": "return model.mini === false;"
+          "functionBody": "return model.mini === false;"
         },
         "properties": {
           "temperature": {

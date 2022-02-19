@@ -6,12 +6,26 @@
     "pin": "031-45-154"
   },
   "description": "Nature Remo Control",
-  "accessories": [{
-    "accessory": "remo-sensor",
-    "name": "sensor",
-    "deviceName": "Remo in living room",
-    "schedule": "*/10 * * * *",
-    "accessToken": "access token"
-  }]
+  "platforms": [
+    {
+      "name": "Config",
+      "port": 8080,
+      "auth": "none",
+      "platform": "config",
+      "log": {
+        "method": "file",
+        "path": "/home/node/.homebridge/homebridge.log"
+      }
+    }
+  ],
+  "accessories": [
+    {
+      "accessory": "remo-sensor",
+      "name": "sensor",
+      "deviceName": "Remo in living room",
+      "cache": true,
+      "schedule": "*/10 * * * *",
+      "accessToken": "access token"
+    }
+  ]
 }
-

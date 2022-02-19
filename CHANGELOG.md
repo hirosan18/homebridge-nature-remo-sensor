@@ -1,6 +1,14 @@
 # Changelog
 
 
+## [Version 1.5.0](https://github.com/hirosan18/homebridge-nature-remo-sensor/compare/v1.4.0...v1.5.0) (2022-02-19)
+
+#### Changes
+
+- Add Cache Option
+- Change http module to axios
+- Update dependencies
+
 ## [Version 1.4.0](https://github.com/hirosan18/homebridge-nature-remo-sensor/compare/v1.3.0...v1.4.0) (2021-02-25)
 
 #### Changes
